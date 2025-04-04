@@ -1,0 +1,123 @@
+---
+title: "Heart Dataset Analysis - Final Project 2"
+author: "Yixuan He"
+date: "2025-02-21"
+output: html_document
+---
+
+## Introduction
+
+This report analyzes the heart disease dataset contained in the file **heart.csv** from [Kaggle Heart Failure Prediction Dataset](https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction/data), which contains 918 patient records with clinical features (e.g., age, cholesterol, blood pressure) and a binary target variable indicating the presence of heart disease.
+
+The dataset was constructed by merging several independently available heart disease datasets, which had not been previously combined. This integrated dataset consolidates five heart-related datasets based on 12 common features, making it the largest heart disease dataset available to date for research purposes. Consequently, the Heart Failure Prediction Dataset comprises 918 observations and 12 features, providing a robust foundation for predicting potential heart disease.
+
+Here are the attributes of the dataset:
+
+- **Age**: age of the patient [years]
+- **Sex**: sex of the patient [M: Male, F: Female]
+- **ChestPainType**: chest pain type [TA: Typical Angina, ATA: Atypical Angina, NAP: Non-Anginal Pain, ASY: Asymptomatic]
+- **RestingBP**: resting blood pressure [mm Hg]
+- **Cholesterol**: serum cholesterol [mm/dl]
+- **FastingBS**: fasting blood sugar [1: if FastingBS > 120 mg/dl, 0: otherwise]
+- **RestingECG**: resting electrocardiogram results [Normal: Normal, ST: having ST-T wave abnormality (T wave inversions and/or ST elevation or depression of > 0.05 mV), LVH: showing probable or definite left ventricular hypertrophy by Estes' criteria]
+- **MaxHR**: maximum heart rate achieved [Numeric value between 60 and 202]
+- **ExerciseAngina**: exercise-induced angina [Y: Yes, N: No]
+- **Oldpeak**: oldpeak = ST [Numeric value measured in depression]
+- **ST_Slope**: the slope of the peak exercise ST segment [Up: upsloping, Flat: flat, Down: downsloping]
+- **HeartDisease**: output class [1: heart disease, 0: Normal]
+
+The objectives of this analysis are to:
+
+- Understand the basic structure and statistical properties of the data.
+- Summarize key features (e.g. patient age) with a formatted table.
+- Visualize the distribution of an important variable, in this case, patient age.
+- *(Optional)* Build a simple predictive model if time allows.
+
+In this analysis, we begin with an overview of the data and focus on exploring the age distribution among the patients.
+
+
+## Data Loading
+
+In this section, we load the dataset from the local directory and inspect its structure.
+
+```{r load-data, echo=TRUE, message=FALSE, warning=FALSE}
+# Load necessary libraries
+#install.packages("tidyverse")
+#install.packages("knitr")
+#install.packages("kableExtra")
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+
+# Read the data from a local file
+heart_data <- read.csv("heart.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# Display the structure of the dataset
+str(heart_data)
+```
+
+
+## Table
+
+```{r load-table, echo=TRUE, message=FALSE, warning=FALSE}
+
+# Create a formatted table using the first 6 rows of the dataset
+formatted_table <- head(heart_data)
+
+kable(formatted_table, 
+      caption = "<div align='center'>Formatted Table: Sample Data from the Heart Disease Dataset</div>", 
+      format = "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), 
+                full_width = FALSE, 
+                position = "center")
+
+
+
+
+# Calculate the age distribution by HeartDisease status
+age_distribution <- heart_data %>%
+  group_by(HeartDisease) %>%
+  summarise(
+    Count = n(),
+    Mean_Age = round(mean(Age, na.rm = TRUE), 2),
+    Median_Age = median(Age, na.rm = TRUE),
+    SD_Age = round(sd(Age, na.rm = TRUE), 2)
+  )
+# Display the formatted table with a caption that includes a line break
+kable(age_distribution, 
+      caption = "Formatted Table: Age Distribution by Heart Disease<br><div align='center'>(Statistical Summary)", 
+      format = "html") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+```
+
+## Table description
+
+The first table displays the first six rows of the dataset, providing an initial glimpse of its structure. 
+
+The second table summarizes the age distribution of patients grouped by heart disease status, including the count, mean, median, and standard deviation of ages. The analysis shows that the dataset is fairly balanced regarding heart disease classification, and patients with heart disease tend to be older—as indicated by their higher mean and median ages. This aligns with common knowledge that older individuals are more prone to heart disease. Additionally, the standard deviation of age is slightly higher among patients without heart disease, suggesting a wider age range in that group.
+
+
+## Figure
+
+```{r load-figure, echo=TRUE, message=FALSE, warning=FALSE}
+# Convert HeartDisease to a factor with labels
+heart_data$HeartDisease <- factor(heart_data$HeartDisease, levels = c(0, 1), labels = c("No Heart Disease", "Heart Disease"))
+
+# Create a faceted histogram for the 'Age' variable by HeartDisease status
+ggplot(heart_data, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "steelblue", color = "black") +
+  facet_wrap(~ HeartDisease) +
+  labs(
+    title = "Distribution of Age by Heart Disease Status",
+    x = "Age (years)",
+    y = "Frequency"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
+## Figure description
+
+The figure consists of two histograms that display the distribution of patients’ ages, separated by heart disease status ("No Heart Disease" and "Heart Disease"). Both histograms exhibit an approximately normal distribution. The results are consistent with the table: patients with heart disease tend to have higher mean and median ages, which aligns with common knowledge that older individuals are more prone to heart disease. Additionally, the spread of ages (standard deviation) is slightly broader among patients without heart disease, indicating a wider age range in that group.
