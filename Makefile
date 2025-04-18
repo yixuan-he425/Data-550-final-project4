@@ -15,3 +15,9 @@ $(REPORT): $(RMD) data/heart.csv code/table.R code/figure.R
 # Clean: remove the generated report file
 clean:
 	rm -f $(REPORT)
+
+# renv : make install rule to restore the environment
+.PHONY: install
+
+install:
+	Rscript -e "renv::restore(prompt = FALSE)"
